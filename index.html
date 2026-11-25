@@ -24,7 +24,7 @@
       <main>
         <section class="intro" aria-labelledby="page-title">
           <p class="eyebrow"><span></span> INTERACTIVE GEOMETRY</p>
-          <h1 id="page-title">Make shapes<br />make sense.</h1>
+          <h1 id="page-title">Make shapes</h1>
           <p class="intro-copy">
             Choose a shape, enter its measurements, and see how its area and
             perimeter come together.
@@ -62,16 +62,20 @@
                 </div>
               </div>
 
-              <div id="right-triangle-option" class="right-triangle-option" hidden>
-                <label class="right-triangle-label" for="right-triangle-toggle">
-                  <input id="right-triangle-toggle" type="checkbox" />
-                  <span>
-                    <strong>It's a right triangle</strong>
-                    <small>Enter the two legs; the hypotenuse will be calculated.</small>
-                  </span>
-                </label>
+              <div id="triangle-nature-control" class="form-field triangle-nature-control" hidden>
+                <label for="triangle-nature-select">Triangle nature</label>
+                <select id="triangle-nature-select" name="triangle-nature">
+                  <option value="auto">Detect from sides</option>
+                  <option value="right">Right triangle</option>
+                  <option value="semi-equilateral">Semi-equilateral (30-60-90)</option>
+                  <option value="right-isosceles">Right isosceles (45-45-90)</option>
+                  <option value="equilateral">Equilateral</option>
+                  <option value="isosceles">Isosceles</option>
+                  <option value="scalene">Scalene</option>
+                </select>
               </div>
 
+              <div id="triangle-extra-fields" class="triangle-extra-fields"></div>
               <div id="dimension-fields" class="dimension-fields"></div>
               <p id="error-message" class="error-message" role="alert" hidden></p>
 
@@ -82,10 +86,16 @@
             </form>
 
             <p class="formula-note">
-              Triangle area uses <strong>base &times; height &divide; 2</strong>.
-              Right-triangle mode uses <strong>a<sup>2</sup> + b<sup>2</sup> = c<sup>2</sup></strong>
-              to calculate the hypotenuse.
+              Choose a triangle nature to see its metric relations. Known types ask only for the
+              measurements needed.
             </p>
+            <section id="triangle-relations" class="triangle-relations" aria-live="polite" hidden>
+              <h3 id="relations-heading"></h3>
+              <ul id="relations-list"></ul>
+              <p id="relations-note" class="relations-note" hidden>
+                In these right-triangle relations, c is the hypotenuse.
+              </p>
+            </section>
           </aside>
 
           <section class="result-card" aria-labelledby="diagram-title">

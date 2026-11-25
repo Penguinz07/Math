@@ -1,8 +1,13 @@
 const shapeSelect = document.querySelector("#shape-select");
 const unitSelect = document.querySelector("#unit-select");
 const dimensionFields = document.querySelector("#dimension-fields");
-const rightTriangleOption = document.querySelector("#right-triangle-option");
-const rightTriangleToggle = document.querySelector("#right-triangle-toggle");
+const triangleNatureControl = document.querySelector("#triangle-nature-control");
+const triangleNatureSelect = document.querySelector("#triangle-nature-select");
+const triangleExtraFields = document.querySelector("#triangle-extra-fields");
+const triangleRelations = document.querySelector("#triangle-relations");
+const relationsHeading = document.querySelector("#relations-heading");
+const relationsList = document.querySelector("#relations-list");
+const relationsNote = document.querySelector("#relations-note");
 const calculatorForm = document.querySelector("#calculator-form");
 const errorMessage = document.querySelector("#error-message");
 const resultPanel = document.querySelector("#results");
@@ -25,17 +30,68 @@ const shapeFields = {
     { key: "height", label: "Height", placeholder: "e.g. 4" },
   ],
   circle: [{ key: "radius", label: "Radius", placeholder: "e.g. 3" }],
-  triangle: [
-    { key: "side-a", label: "Side AB", placeholder: "e.g. 3" },
-    { key: "side-b", label: "Side BC", placeholder: "e.g. 4" },
-    { key: "side-c", label: "Side CA", placeholder: "e.g. 5" },
-  ],
 };
+
+const triangleSideFields = [
+  { key: "side-a", label: "Side AB", placeholder: "e.g. 3" },
+  { key: "side-b", label: "Side BC", placeholder: "e.g. 4" },
+  { key: "side-c", label: "Side CA", placeholder: "e.g. 5" },
+];
 
 const rightTriangleFields = [
   { key: "leg-a", label: "Leg 1", placeholder: "e.g. 3" },
   { key: "leg-b", label: "Leg 2", placeholder: "e.g. 4" },
 ];
+
+const knownSideOptions = {
+  "semi-equilateral": [
+    { value: "hypotenuse", label: "Hypotenuse" },
+    { value: "long", label: "Long side" },
+    { value: "short", label: "Short side" },
+  ],
+  "right-isosceles": [
+    { value: "hypotenuse", label: "Hypotenuse" },
+    { value: "side", label: "Leg" },
+  ],
+};
+
+const selectedKnownSides = {
+  "semi-equilateral": "hypotenuse",
+  "right-isosceles": "hypotenuse",
+};
+
+const natureLabels = {
+  right: "Right Triangle",
+  "semi-equilateral": "Semi-equilateral Triangle",
+  "right-isosceles": "Right Isosceles Triangle",
+  equilateral: "Equilateral Triangle",
+  isosceles: "Isosceles Triangle",
+  scalene: "Scalene Triangle",
+};
+
+const natureRelations = {
+  right: [
+    "a² + b² = c²",
+    "Median to hypotenuse = c / 2",
+  ],
+  "semi-equilateral": [
+    "a² + b² = c²",
+    "Median to hypotenuse = c / 2",
+    "Short side = c / 2",
+    "Long side = (√3 / 2) × c",
+  ],
+  "right-isosceles": [
+    "a² + b² = c²",
+    "Median to hypotenuse = c / 2",
+    "Side = (√2 / 2) × c",
+    "c = side × √2",
+  ],
+  equilateral: ["a = b = c"],
+  isosceles: ["Two sides have equal lengths."],
+  scalene: ["All three side lengths are different."],
+};
+
+const rightTriangleNatures = new Set(["right", "semi-equilateral", "right-isosceles"]);
 
 const numberFormatter = new Intl.NumberFormat(undefined, {
   maximumFractionDigits: 2,
@@ -86,13 +142,90 @@ function showEmptyDrawing() {
   svg.setAttribute("aria-label", "Shape drawing preview");
 }
 
-function updateShapeFields() {
-  const shape = shapeSelect.value;
-  rightTriangleOption.hidden = shape !== "triangle";
-  const fields = shape === "triangle" && rightTriangleToggle.checked
-    ? rightTriangleFields
-    : shapeFields[shape];
-  dimensionFields.replaceChildren(...fields.map(createField));
+function getTriangleFields(nature = triangleNatureSelect.value) {
+  if (nature === "auto" || nature === "scalene") {
+    return triangleSideFields;
+  }
+  if (nature === "right") {
+    return rightTriangleFields;
+  }
+  if (nature === "semi-equilateral" || nature === "right-isosceles") {
+    const knownSide = selectedKnownSides[nature];
+    const option = knownSideOptions[nature].find(({ value }) => value === knownSide);
+    const key = `known-${knownSide}`;
+    return [{
+      key,
+      label: `${option.label} length`,
+      placeholder: "e.g. 10",
+    }];
+  }
+  if (nature === "equilateral") {
+    return [{ key: "equilateral-side", label: "Side length", placeholder: "e.g. 5" }];
+  }
+  return [
+    { key: "equal-side", label: "Equal side length", placeholder: "e.g. 5" },
+    { key: "base", label: "Base length", placeholder: "e.g. 6" },
+  ];
+}
+
+function createKnownSideField(nature) {
+  const field = document.createElement("label");
+  field.className = "form-field known-side-field";
+  field.htmlFor = "known-side-select";
+
+  const label = document.createElement("span");
+  label.textContent = "Known side";
+
+  const select = document.createElement("select");
+  select.id = "known-side-select";
+  for (const option of knownSideOptions[nature]) {
+    const optionElement = document.createElement("option");
+    optionElement.value = option.value;
+    optionElement.textContent = option.label;
+    select.append(optionElement);
+  }
+  select.value = selectedKnownSides[nature];
+  select.addEventListener("change", () => {
+    selectedKnownSides[nature] = select.value;
+    updateTriangleFields();
+    resetCalculationDisplay();
+  });
+
+  field.append(label, select);
+  return field;
+}
+
+function updateTriangleFields() {
+  const nature = triangleNatureSelect.value;
+  triangleExtraFields.replaceChildren();
+  if (knownSideOptions[nature]) {
+    triangleExtraFields.append(createKnownSideField(nature));
+  }
+  dimensionFields.replaceChildren(...getTriangleFields(nature).map(createField));
+  updateNatureInfo(nature);
+}
+
+function updateNatureInfo(nature, detected = false) {
+  relationsHeading.textContent = detected
+    ? `Detected: ${natureLabels[nature]}`
+    : nature === "auto"
+      ? "Automatic detection"
+      : natureLabels[nature];
+  relationsList.replaceChildren();
+
+  const relations = nature === "auto"
+    ? ["Enter three sides; if no special type matches, the triangle is Scalene."]
+    : natureRelations[nature];
+  for (const relation of relations) {
+    const item = document.createElement("li");
+    item.textContent = relation;
+    relationsList.append(item);
+  }
+
+  relationsNote.hidden = !rightTriangleNatures.has(nature);
+}
+
+function resetCalculationDisplay() {
   errorMessage.hidden = true;
   resultPanel.hidden = true;
   heightCaption.hidden = true;
@@ -101,10 +234,26 @@ function updateShapeFields() {
   showEmptyDrawing();
 }
 
+function updateShapeFields() {
+  const shape = shapeSelect.value;
+  const isTriangle = shape === "triangle";
+  triangleNatureControl.hidden = !isTriangle;
+  triangleRelations.hidden = !isTriangle;
+
+  if (isTriangle) {
+    updateTriangleFields();
+  } else {
+    triangleExtraFields.replaceChildren();
+    dimensionFields.replaceChildren(...shapeFields[shape].map(createField));
+  }
+
+  resetCalculationDisplay();
+}
+
 function readDimensions() {
   const values = {};
-  const fields = shapeSelect.value === "triangle" && rightTriangleToggle.checked
-    ? rightTriangleFields
+  const fields = shapeSelect.value === "triangle"
+    ? getTriangleFields()
     : shapeFields[shapeSelect.value];
   for (const field of fields) {
     const input = document.querySelector(`#dimension-${field.key}`);
@@ -121,15 +270,130 @@ function readDimensions() {
   return values;
 }
 
-function isRightTriangle(sideA, sideB, sideC) {
-  const [legA, legB, hypotenuse] = [sideA, sideB, sideC].sort((a, b) => a - b);
-  const legsSquared = legA * legA + legB * legB;
-  const hypotenuseSquared = hypotenuse * hypotenuse;
-  const tolerance = Math.max(legsSquared, hypotenuseSquared) * 1e-9;
-  return Math.abs(legsSquared - hypotenuseSquared) <= tolerance;
+function approximatelyEqual(a, b) {
+  return Math.abs(a - b) <= 0.001 * Math.max(Math.abs(a), Math.abs(b));
 }
 
-function calculateShape(shape, values, rightTriangleMode = false) {
+function detectTriangleNature(sideA, sideB, sideC) {
+  if (approximatelyEqual(sideA, sideB) && approximatelyEqual(sideB, sideC)) {
+    return "equilateral";
+  }
+
+  const [shortSide, middleSide, hypotenuse] = [sideA, sideB, sideC].sort((a, b) => a - b);
+  const legsSquared = shortSide * shortSide + middleSide * middleSide;
+  const hypotenuseSquared = hypotenuse * hypotenuse;
+  const isRight = approximatelyEqual(legsSquared, hypotenuseSquared);
+
+  if (isRight) {
+    if (approximatelyEqual(shortSide, middleSide)) {
+      return "right-isosceles";
+    }
+    if (
+      approximatelyEqual(shortSide, hypotenuse / 2)
+      && approximatelyEqual(middleSide, (hypotenuse * Math.sqrt(3)) / 2)
+    ) {
+      return "semi-equilateral";
+    }
+    return "right";
+  }
+
+  if (
+    approximatelyEqual(sideA, sideB)
+    || approximatelyEqual(sideB, sideC)
+    || approximatelyEqual(sideC, sideA)
+  ) {
+    return "isosceles";
+  }
+  return "scalene";
+}
+
+function createTriangle(sideA, sideB, sideC) {
+  const longestSide = Math.max(sideA, sideB, sideC);
+  const otherSides = sideA + sideB + sideC - longestSide;
+
+  if (longestSide >= otherSides) {
+    throw new Error("Those side lengths cannot form a triangle. Try again.");
+  }
+
+  const x = (sideA * sideA + sideC * sideC - sideB * sideB) / (2 * sideA);
+  const height = Math.sqrt(Math.max(0, sideC * sideC - x * x));
+  const area = (sideA * height) / 2;
+  const nature = detectTriangleNature(sideA, sideB, sideC);
+  const hypotenuse = rightTriangleNatures.has(nature) ? longestSide : undefined;
+
+  return {
+    vertices: [
+      { x: 0, y: 0 },
+      { x: sideA, y: 0 },
+      { x, y: height },
+    ],
+    sides: [
+      { name: sideA === hypotenuse ? "AB (hyp.)" : "AB", length: sideA },
+      { name: sideB === hypotenuse ? "BC (hyp.)" : "BC", length: sideB },
+      { name: sideC === hypotenuse ? "CA (hyp.)" : "CA", length: sideC },
+    ],
+    height,
+    hypotenuse,
+    nature,
+    area,
+    perimeter: sideA + sideB + sideC,
+  };
+}
+
+function calculateTriangle(nature, values) {
+  if (nature === "auto" || nature === "scalene") {
+    return createTriangle(values["side-a"], values["side-b"], values["side-c"]);
+  }
+
+  if (nature === "right") {
+    const legA = values["leg-a"];
+    const legB = values["leg-b"];
+    return createTriangle(Math.hypot(legA, legB), legB, legA);
+  }
+
+  if (nature === "semi-equilateral") {
+    const knownSide = selectedKnownSides[nature];
+    const value = values[`known-${knownSide}`];
+    let hypotenuse;
+    let shortSide;
+    let longSide;
+
+    if (knownSide === "hypotenuse") {
+      hypotenuse = value;
+      shortSide = hypotenuse / 2;
+      longSide = (hypotenuse * Math.sqrt(3)) / 2;
+    } else if (knownSide === "short") {
+      shortSide = value;
+      hypotenuse = shortSide * 2;
+      longSide = (hypotenuse * Math.sqrt(3)) / 2;
+    } else {
+      longSide = value;
+      hypotenuse = (longSide * 2) / Math.sqrt(3);
+      shortSide = hypotenuse / 2;
+    }
+
+    return createTriangle(hypotenuse, longSide, shortSide);
+  }
+
+  if (nature === "right-isosceles") {
+    const knownSide = selectedKnownSides[nature];
+    const value = values[`known-${knownSide}`];
+    const hypotenuse = knownSide === "hypotenuse" ? value : value * Math.sqrt(2);
+    const leg = knownSide === "hypotenuse" ? (value * Math.sqrt(2)) / 2 : value;
+    return createTriangle(hypotenuse, leg, leg);
+  }
+
+  if (nature === "equilateral") {
+    const side = values["equilateral-side"];
+    return createTriangle(side, side, side);
+  }
+
+  const equalSide = values["equal-side"];
+  const base = values.base;
+  return createTriangle(base, equalSide, equalSide);
+}
+
+function calculateShape(shape, values, triangleNature = "auto") {
   if (shape === "square") {
     const side = values.side;
     return {
@@ -179,65 +443,7 @@ function calculateShape(shape, values, rightTriangleMode = false) {
     };
   }
 
-  if (rightTriangleMode) {
-    const legA = values["leg-a"];
-    const legB = values["leg-b"];
-    const hypotenuse = Math.hypot(legA, legB);
-    const x = (hypotenuse * hypotenuse + legA * legA - legB * legB) / (2 * hypotenuse);
-    const height = Math.sqrt(Math.max(0, legA * legA - x * x));
-
-    return {
-      vertices: [
-        { x: 0, y: 0 },
-        { x: hypotenuse, y: 0 },
-        { x, y: height },
-      ],
-      sides: [
-        { name: "AB (hyp.)", length: hypotenuse },
-        { name: "BC", length: legB },
-        { name: "CA", length: legA },
-      ],
-      height,
-      hypotenuse,
-      isRightTriangle: true,
-      area: (hypotenuse * height) / 2,
-      perimeter: hypotenuse + legA + legB,
-    };
-  }
-
-  const sideA = values["side-a"];
-  const sideB = values["side-b"];
-  const sideC = values["side-c"];
-  const longestSide = Math.max(sideA, sideB, sideC);
-  const otherSides = sideA + sideB + sideC - longestSide;
-
-  if (longestSide >= otherSides) {
-    throw new Error("Those side lengths cannot form a triangle. Try again.");
-  }
-
-  const x = (sideA * sideA + sideC * sideC - sideB * sideB) / (2 * sideA);
-  const height = Math.sqrt(Math.max(0, sideC * sideC - x * x));
-  const area = (sideA * height) / 2;
-  const rightTriangle = isRightTriangle(sideA, sideB, sideC);
-  const hypotenuse = rightTriangle ? Math.max(sideA, sideB, sideC) : undefined;
-
-  return {
-    vertices: [
-      { x: 0, y: 0 },
-      { x: sideA, y: 0 },
-      { x, y: height },
-    ],
-    sides: [
-      { name: sideA === hypotenuse ? "AB (hyp.)" : "AB", length: sideA },
-      { name: sideB === hypotenuse ? "BC (hyp.)" : "BC", length: sideB },
-      { name: sideC === hypotenuse ? "CA (hyp.)" : "CA", length: sideC },
-    ],
-    height,
-    hypotenuse,
-    isRightTriangle: rightTriangle,
-    area,
-    perimeter: sideA + sideB + sideC,
-  };
+  return calculateTriangle(triangleNature, values);
 }
 
 function svgElement(name, attributes = {}, text = "") {
@@ -426,8 +632,8 @@ function renderDrawing(shape, result, unit) {
     }),
   );
 
-  const shapeName = shape === "triangle" && result.isRightTriangle
-    ? "Right Triangle"
+  const shapeName = shape === "triangle"
+    ? natureLabels[result.nature]
     : `${shape[0].toUpperCase()}${shape.slice(1)}`;
   const title = `${shapeName} drawing`;
   const description = shape === "triangle"
@@ -453,23 +659,29 @@ function showResults(shape, result) {
   unitChip.textContent = unit;
   resultPanel.hidden = false;
   heightCaption.hidden = shape !== "triangle";
-  diagramTitle.textContent = shape === "triangle" && result.isRightTriangle
-    ? "Right Triangle"
+  diagramTitle.textContent = shape === "triangle"
+    ? natureLabels[result.nature]
     : `${shape[0].toUpperCase()}${shape.slice(1)}`;
 
   const detail = shape === "triangle"
-    ? result.isRightTriangle
+    ? rightTriangleNatures.has(result.nature)
       ? `Hypotenuse: ${formatNumber(result.hypotenuse)} ${unit} | Height: ${formatNumber(result.height)} ${unit}`
       : `Height: ${formatNumber(result.height)} ${unit}`
     : shape === "circle"
       ? `Radius: ${formatNumber(result.radius)} ${unit}`
       : "Side lengths are labeled on the drawing.";
   diagramSubtitle.textContent = detail;
+  if (shape === "triangle") {
+    updateNatureInfo(result.nature, true);
+  }
   renderDrawing(shape, result, unit);
 }
 
 shapeSelect.addEventListener("change", updateShapeFields);
-rightTriangleToggle.addEventListener("change", updateShapeFields);
+triangleNatureSelect.addEventListener("change", () => {
+  updateTriangleFields();
+  resetCalculationDisplay();
+});
 unitSelect.addEventListener("change", () => {
   resultPanel.hidden = true;
   heightCaption.hidden = true;
@@ -484,11 +696,14 @@ calculatorForm.addEventListener("submit", (event) => {
 
   try {
     const shape = shapeSelect.value;
-    const rightTriangleMode = shape === "triangle" && rightTriangleToggle.checked;
-    const result = calculateShape(shape, readDimensions(), rightTriangleMode);
+    const triangleNature = shape === "triangle" ? triangleNatureSelect.value : "auto";
+    const result = calculateShape(shape, readDimensions(), triangleNature);
     const valuesToCheck = [result.area, result.perimeter, ...(result.vertices ?? []).flatMap(({ x, y }) => [x, y])];
     if (result.height !== undefined) {
       valuesToCheck.push(result.height);
+    }
+    if (result.hypotenuse !== undefined) {
+      valuesToCheck.push(result.hypotenuse);
     }
     if (!valuesToCheck.every(Number.isFinite) || result.area <= 0) {
       throw new Error("Those measurements are too large to calculate. Try smaller values.");
