@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Calculate and visualize the area and perimeter of common shapes."
+    />
+    <title>Shape Studio | Geometry Calculator</title>
+    <link rel="stylesheet" href="styles.css" />
+    <script src="app.js" defer></script>
+  </head>
+  <body>
+    <div class="page-shell">
+      <header class="topbar">
+        <a class="brand" href="#" aria-label="Shape Studio home">
+          <span class="brand-mark" aria-hidden="true">S</span>
+          <span>Shape Studio</span>
+        </a>
+        <span class="topbar-note">A little space for geometry</span>
+      </header>
+
+      <main>
+        <section class="intro" aria-labelledby="page-title">
+          <p class="eyebrow"><span></span> INTERACTIVE GEOMETRY</p>
+          <h1 id="page-title">Make shapes<br />make sense.</h1>
+          <p class="intro-copy">
+            Choose a shape, enter its measurements, and see how its area and
+            perimeter come together.
+          </p>
+        </section>
+
+        <section class="workspace" aria-label="Shape calculator">
+          <aside class="control-card">
+            <div class="card-heading">
+              <span class="step-number">01</span>
+              <div>
+                <h2>Set your dimensions</h2>
+                <p>Start with a shape and its measurements.</p>
+              </div>
+            </div>
+
+            <form id="calculator-form" novalidate>
+              <div class="select-row">
+                <div class="form-field">
+                  <label for="shape-select">Shape</label>
+                  <select id="shape-select" name="shape">
+                    <option value="square">Square</option>
+                    <option value="rectangle">Rectangle</option>
+                    <option value="circle">Circle</option>
+                    <option value="triangle">Triangle</option>
+                  </select>
+                </div>
+                <div class="form-field unit-field">
+                  <label for="unit-select">Units</label>
+                  <select id="unit-select" name="unit">
+                    <option value="cm">cm</option>
+                    <option value="m">m</option>
+                    <option value="in">in</option>
+                  </select>
+                </div>
+              </div>
+
+              <div id="right-triangle-option" class="right-triangle-option" hidden>
+                <label class="right-triangle-label" for="right-triangle-toggle">
+                  <input id="right-triangle-toggle" type="checkbox" />
+                  <span>
+                    <strong>It's a right triangle</strong>
+                    <small>Enter the two legs; the hypotenuse will be calculated.</small>
+                  </span>
+                </label>
+              </div>
+
+              <div id="dimension-fields" class="dimension-fields"></div>
+              <p id="error-message" class="error-message" role="alert" hidden></p>
+
+              <button class="calculate-button" type="submit">
+                <span>Calculate and draw</span>
+                <span class="button-arrow" aria-hidden="true">&rarr;</span>
+              </button>
+            </form>
+
+            <p class="formula-note">
+              Triangle area uses <strong>base &times; height &divide; 2</strong>.
+              Right-triangle mode uses <strong>a<sup>2</sup> + b<sup>2</sup> = c<sup>2</sup></strong>
+              to calculate the hypotenuse.
+            </p>
+          </aside>
+
+          <section class="result-card" aria-labelledby="diagram-title">
+            <header class="result-header">
+              <div>
+                <p class="result-kicker">YOUR SHAPE</p>
+                <h2 id="diagram-title">Ready to sketch</h2>
+                <p id="diagram-subtitle">Enter measurements to get started.</p>
+              </div>
+              <span id="unit-chip" class="unit-chip">CM</span>
+            </header>
+
+            <div id="results" class="result-metrics" hidden>
+              <article class="metric">
+                <p>AREA</p>
+                <output id="area-result">—</output>
+              </article>
+              <article class="metric">
+                <p id="perimeter-label">PERIMETER</p>
+                <output id="perimeter-result">—</output>
+              </article>
+            </div>
+
+            <div class="drawing-frame">
+              <svg
+                id="shape-drawing"
+                viewBox="0 0 640 480"
+                role="img"
+                aria-label="Shape drawing preview"
+              >
+                <rect class="drawing-background" width="640" height="480" />
+                <text class="empty-message" x="320" y="240">
+                  Your drawing will appear here
+                </text>
+              </svg>
+            </div>
+
+            <p class="drawing-caption">
+              <span class="caption-dot" aria-hidden="true"></span>
+              Dimensions are labeled on the drawing.
+              <span id="height-caption" class="height-caption" hidden>
+                <span class="height-swatch" aria-hidden="true"></span>
+                Triangle height
+              </span>
+            </p>
+          </section>
+        </section>
+      </main>
+
+      <footer class="footer">
+        <span>Shape Studio</span>
+        <span>Area is measured in square units; perimeter in linear units.</span>
+      </footer>
+    </div>
+  </body>
+</html>
