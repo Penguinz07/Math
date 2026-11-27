@@ -26,120 +26,52 @@
           <p class="eyebrow"><span></span> INTERACTIVE GEOMETRY</p>
           <h1 id="page-title">Make shapes</h1>
           <p class="intro-copy">
-            Choose a shape, enter its measurements, and see how its area and
-            perimeter come together.
+            Add shapes, enter their measurements, and arrange them together on
+            a measured canvas.
           </p>
         </section>
 
         <section class="workspace" aria-label="Shape calculator">
-          <aside class="control-card">
-            <div class="card-heading">
-              <span class="step-number">01</span>
-              <div>
-                <h2>Set your dimensions</h2>
-                <p>Start with a shape and its measurements.</p>
-              </div>
-            </div>
-
-            <form id="calculator-form" novalidate>
-              <div class="select-row">
-                <div class="form-field">
-                  <label for="shape-select">Shape</label>
-                  <select id="shape-select" name="shape">
-                    <option value="square">Square</option>
-                    <option value="rectangle">Rectangle</option>
-                    <option value="circle">Circle</option>
-                    <option value="triangle">Triangle</option>
-                  </select>
-                </div>
-                <div class="form-field unit-field">
-                  <label for="unit-select">Units</label>
-                  <select id="unit-select" name="unit">
-                    <option value="cm">cm</option>
-                    <option value="m">m</option>
-                    <option value="in">in</option>
-                  </select>
+          <section class="control-card shape-manager" aria-labelledby="shapes-heading">
+            <header class="manager-header">
+              <div class="card-heading">
+                <span class="step-number">01</span>
+                <div>
+                  <h2 id="shapes-heading">Your shapes</h2>
+                  <p>Add as many shapes as you need.</p>
                 </div>
               </div>
-
-              <div id="triangle-nature-control" class="form-field triangle-nature-control" hidden>
-                <label for="triangle-nature-select">Triangle nature</label>
-                <select id="triangle-nature-select" name="triangle-nature">
-                  <option value="auto">Detect from sides</option>
-                  <option value="right">Right triangle</option>
-                  <option value="semi-equilateral">Semi-equilateral (30-60-90)</option>
-                  <option value="right-isosceles">Right isosceles (45-45-90)</option>
-                  <option value="equilateral">Equilateral</option>
-                  <option value="isosceles">Isosceles</option>
-                  <option value="scalene">Scalene</option>
-                </select>
-              </div>
-
-              <div id="triangle-extra-fields" class="triangle-extra-fields"></div>
-              <div id="dimension-fields" class="dimension-fields"></div>
-              <p id="error-message" class="error-message" role="alert" hidden></p>
-
-              <button class="calculate-button" type="submit">
-                <span>Calculate and draw</span>
-                <span class="button-arrow" aria-hidden="true">&rarr;</span>
+              <button id="add-shape" class="add-shape-button" type="button">
+                <span aria-hidden="true">+</span> Add shape
               </button>
-            </form>
+            </header>
+            <div id="shape-items" class="shape-items"></div>
+          </section>
 
-            <p class="formula-note">
-              Choose a triangle nature to see its metric relations. Known types ask only for the
-              measurements needed.
-            </p>
-            <section id="triangle-relations" class="triangle-relations" aria-live="polite" hidden>
-              <h3 id="relations-heading"></h3>
-              <ul id="relations-list"></ul>
-              <p id="relations-note" class="relations-note" hidden>
-                In these right-triangle relations, c is the hypotenuse.
-              </p>
-            </section>
-          </aside>
-
-          <section class="result-card" aria-labelledby="diagram-title">
+          <section class="result-card board-card" aria-labelledby="board-title">
             <header class="result-header">
               <div>
-                <p class="result-kicker">YOUR SHAPE</p>
-                <h2 id="diagram-title">Ready to sketch</h2>
-                <p id="diagram-subtitle">Enter measurements to get started.</p>
+                <p class="result-kicker">SHARED CANVAS</p>
+                <h2 id="board-title">Arrange your shapes</h2>
+                <p id="board-subtitle">Calculate a shape, then drag it to move it.</p>
               </div>
-              <span id="unit-chip" class="unit-chip">CM</span>
+              <span class="unit-chip">1 cm = 1 CSS cm</span>
             </header>
-
-            <div id="results" class="result-metrics" hidden>
-              <article class="metric">
-                <p>AREA</p>
-                <output id="area-result">—</output>
-              </article>
-              <article class="metric">
-                <p id="perimeter-label">PERIMETER</p>
-                <output id="perimeter-result">—</output>
-              </article>
-            </div>
 
             <div class="drawing-frame">
               <svg
-                id="shape-drawing"
+                id="shape-board"
                 viewBox="0 0 640 480"
                 role="img"
-                aria-label="Shape drawing preview"
+                aria-label="Shared shape canvas. Drag a shape to move it."
               >
                 <rect class="drawing-background" width="640" height="480" />
-                <text class="empty-message" x="320" y="240">
-                  Your drawing will appear here
-                </text>
+                <text class="empty-message" x="320" y="240">Add and calculate a shape to begin.</text>
               </svg>
             </div>
 
             <p class="drawing-caption">
-              <span class="caption-dot" aria-hidden="true"></span>
-              Dimensions are labeled on the drawing.
-              <span id="height-caption" class="height-caption" hidden>
-                <span class="height-swatch" aria-hidden="true"></span>
-                Triangle height
-              </span>
+              Click and hold a shape to move it. Each shape keeps its own measurements and results.
             </p>
           </section>
         </section>

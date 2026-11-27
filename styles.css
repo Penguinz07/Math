@@ -153,6 +153,143 @@ h1 {
   padding: 27px 25px 22px;
 }
 
+.shape-manager,
+.board-card {
+  min-width: 0;
+}
+
+.manager-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 22px;
+}
+
+.manager-header .card-heading {
+  margin-bottom: 0;
+}
+
+.add-shape-button {
+  display: inline-flex;
+  min-height: 38px;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 7px;
+  padding: 0 12px;
+  border: 1px solid #d5e5dc;
+  border-radius: 10px;
+  background: #f5faf6;
+  color: var(--green-dark);
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 750;
+}
+
+.add-shape-button:hover {
+  background: var(--green-pale);
+}
+
+.add-shape-button span {
+  font-size: 18px;
+  font-weight: 400;
+}
+
+.shape-items {
+  display: grid;
+  gap: 14px;
+}
+
+.shape-card {
+  min-width: 0;
+  padding: 17px;
+  border: 1px solid #e3ebe6;
+  border-radius: 15px;
+  background: #fcfdfc;
+}
+
+.shape-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 15px;
+}
+
+.shape-card-header h3 {
+  margin: 0;
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 750;
+}
+
+.remove-shape-button {
+  min-height: 30px;
+  padding: 0 9px;
+  border: 1px solid #eadfdd;
+  border-radius: 8px;
+  background: white;
+  color: #96645c;
+  cursor: pointer;
+  font-size: 10px;
+  font-weight: 650;
+}
+
+.remove-shape-button:hover {
+  background: #fbf3f1;
+}
+
+.shape-form .select-row {
+  grid-template-columns: minmax(0, 1fr) 76px;
+  gap: 9px;
+  margin-bottom: 15px;
+}
+
+.shape-form .triangle-nature-control,
+.shape-form .triangle-extra-field {
+  margin-bottom: 15px;
+}
+
+.shape-form .dimension-fields {
+  margin-bottom: 14px;
+}
+
+.shape-form .triangle-relations {
+  margin-top: 13px;
+}
+
+.item-results {
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid #e9efeb;
+}
+
+.item-results > h3 {
+  margin: 0 0 10px;
+  color: #355d4d;
+  font-size: 13px;
+}
+
+.item-results .result-metrics {
+  gap: 8px;
+  margin-bottom: 0;
+}
+
+.item-results .metric {
+  padding: 10px;
+}
+
+.item-results .metric output {
+  font-size: 15px;
+}
+
+.shape-result-detail {
+  margin: 11px 0 0;
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1.5;
+}
+
 .card-heading {
   display: flex;
   gap: 13px;
@@ -430,17 +567,17 @@ select:focus,
 }
 
 .drawing-frame {
-  overflow: hidden;
+  overflow: auto;
+  min-height: 300px;
+  max-height: 72vh;
   border: 1px solid #e8eeea;
   border-radius: 14px;
   background: #f9fbfa;
 }
 
-#shape-drawing {
+#shape-board {
   display: block;
-  width: 100%;
-  height: auto;
-  min-height: 300px;
+  max-width: none;
 }
 
 .drawing-background {
@@ -449,16 +586,16 @@ select:focus,
 
 .shape-polygon,
 .shape-circle {
-  fill: #dceee5;
+  fill: var(--shape-fill, #dceee5);
   fill-opacity: 0.82;
-  stroke: var(--blue);
+  stroke: var(--shape-stroke, var(--blue));
   stroke-width: 3;
   stroke-linejoin: round;
 }
 
 .vertex-dot {
   fill: white;
-  stroke: var(--blue);
+  stroke: var(--shape-stroke, var(--blue));
   stroke-width: 2;
 }
 
@@ -556,6 +693,59 @@ select:focus,
   background: transparent;
 }
 
+.median-caption {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: 9px;
+  color: #966a37;
+}
+
+.median-swatch {
+  width: 17px;
+  height: 0;
+  border-top: 2px dashed #b27b3f;
+}
+
+.median-line {
+  stroke: #b27b3f;
+  stroke-dasharray: 8 5;
+  stroke-linecap: round;
+  stroke-width: 2;
+}
+
+.median-label {
+  fill: #8d632f;
+  font-size: 11px;
+  font-weight: 750;
+  paint-order: stroke;
+  stroke: #f9fbfa;
+  stroke-linejoin: round;
+  stroke-width: 4px;
+}
+
+.right-angle-marker {
+  fill: none;
+  stroke: var(--shape-stroke, #2f5870);
+  stroke-width: 2;
+  stroke-linejoin: round;
+}
+
+.board-shape {
+  cursor: grab;
+  touch-action: none;
+}
+
+.board-shape:active,
+.is-dragging .board-shape {
+  cursor: grabbing;
+}
+
+.board-shape:focus-visible .shape-polygon,
+.board-shape:focus-visible .shape-circle {
+  stroke-width: 5;
+}
+
 .footer {
   display: flex;
   justify-content: space-between;
@@ -585,6 +775,10 @@ select:focus,
 
   .control-card {
     padding: 23px;
+  }
+
+  .drawing-frame {
+    max-height: 65vh;
   }
 }
 
@@ -623,10 +817,6 @@ select:focus,
 
   .result-header h2 {
     font-size: 22px;
-  }
-
-  #shape-drawing {
-    min-height: 240px;
   }
 
   .footer {
